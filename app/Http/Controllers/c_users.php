@@ -15,6 +15,7 @@ class c_users extends Controller
         $Users->email = $request->email;
         $Users->phone = $request->phone;
         $Users->password = $request->password;
+        $Users->foto='no-image.png';
 
         return $Users->save();
     }
@@ -39,5 +40,25 @@ class c_users extends Controller
         $Users = Users::find($id_user);
 
         return $Users->delete();
+    }
+
+    public function search(Request $request){
+        $username=$request->input('username');
+        
+        return Users::where('username', $username)
+             ->orWhere('username', 'like', '%' .$username . '%')->get();
+    }
+
+    public function upload(Request $request){
+       $id_user = $request->input("_data");
+       $foto =  $request->file('file')->store('public');
+
+       $Users = Users::find($id_user);
+
+       $foto =  str_replace("public/","",$foto);
+       $Users->foto = $foto;
+       
+
+       return $Users->save();
     }
 }

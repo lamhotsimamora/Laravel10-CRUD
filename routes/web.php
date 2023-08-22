@@ -32,7 +32,9 @@ Route::get('/user/{id_user}', function (string $id_user) {
 Route::post('/users',function(){
     return response()->json(Users::all());
 });
-
+Route::post('/search-user',[c_users::class,'search']);
 Route::post('/add-user',[c_users::class, 'add']);
 Route::post('/update-user',[c_users::class, 'update']);
 Route::post('/users-delete',[c_users::class, 'delete']);
+
+Route::post('/upload-foto',[c_users::class, 'upload']);

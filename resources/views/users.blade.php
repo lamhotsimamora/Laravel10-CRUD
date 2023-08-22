@@ -46,6 +46,9 @@
                 <li>Email : {{ $email }}</li>
                 <li>Password : {{ $password }}</li>
                 <li>Phone : {{ $phone }}</li>
+                <li>
+                    <img src="{{url('')}}/storage/{{$foto}}" alt="" widht="100" height="100" class="img-thumbnail">
+                </li>
             </ul>
             
     </div>

@@ -9,6 +9,8 @@
         integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
     <script src="./jnet.js"></script>
+    <script src="./upload.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
@@ -43,6 +45,12 @@
         <hr>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal_add">+Add</button>
         <hr>
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon1">Search</span>
+            <input type="text" class="form-control" @keypress="enterSearch($event)" ref="search" v-model="search"
+                placeholder="Search" aria-label="Username" aria-describedby="basic-addon1">
+        </div>
+        <hr>
         <table class="table">
             <thead>
                 <tr>
@@ -51,6 +59,7 @@
                     <th scope="col">Email</th>
                     <th scope="col">Password</th>
                     <th scope="col">Phone</th>
+                    <th scope="col">Foto</th>
                     <th scope="col">@</th>
                 </tr>
             </thead>
@@ -64,7 +73,12 @@
                     <td>{{data.password}}</td>
                     <td>{{data.phone}}</td>
                     <td>
-                        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modal_update" @click="showUpdated(data)">Update</button>
+                        <img :src="viewImage(data.foto)" width="100" height="100" class="img-thumbnail" alt="">
+                    </td>
+                    <td>
+                        <button class="btn btn-secondary" @click="sendToUpload(data.id_user)" data-bs-toggle="modal" data-bs-target="#modal_upload">Upload</button>
+                        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modal_update"
+                            @click="showUpdated(data)">Update</button>
                         <button class="btn btn-danger" @click="deleteData(data.id_user)">x</button>
                     </td>
                 </tr>
@@ -84,8 +98,9 @@
                 <div class="modal-body">
                     <div class="input-group mb-3">
                         <span class="input-group-text" id="basic-addon1">Username</span>
-                        <input type="text" class="form-control" @keypress="enterAdd($event)" ref="username" v-model="username"
-                            placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
+                        <input type="text" class="form-control" @keypress="enterAdd($event)" ref="username"
+                            v-model="username" placeholder="Username" aria-label="Username"
+                            aria-describedby="basic-addon1">
                     </div>
                     <div class="input-group mb-3">
                         <span class="input-group-text" id="basic-addon1">Email</span>
@@ -94,8 +109,9 @@
                     </div>
                     <div class="input-group mb-3">
                         <span class="input-group-text" id="basic-addon1">Password</span>
-                        <input type="text" class="form-control" @keypress="enterAdd($event)" ref="password" v-model="password"
-                            placeholder="Password" aria-label="Username" aria-describedby="basic-addon1">
+                        <input type="text" class="form-control" @keypress="enterAdd($event)" ref="password"
+                            v-model="password" placeholder="Password" aria-label="Username"
+                            aria-describedby="basic-addon1">
                     </div>
                     <div class="input-group mb-3">
                         <span class="input-group-text" id="basic-addon1">Phone</span>
@@ -111,9 +127,8 @@
         </div>
     </div>
 
-
-       <!-- Modal update-->
-       <div class="modal fade" id="modal_update" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <!-- Modal update-->
+    <div class="modal fade" id="modal_update" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -123,8 +138,9 @@
                 <div class="modal-body">
                     <div class="input-group mb-3">
                         <span class="input-group-text" id="basic-addon1">Username</span>
-                        <input type="text" class="form-control" @keypress="enterAdd($event)" ref="username" v-model="username"
-                            placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
+                        <input type="text" class="form-control" @keypress="enterAdd($event)" ref="username"
+                            v-model="username" placeholder="Username" aria-label="Username"
+                            aria-describedby="basic-addon1">
                     </div>
                     <div class="input-group mb-3">
                         <span class="input-group-text" id="basic-addon1">Email</span>
@@ -133,8 +149,9 @@
                     </div>
                     <div class="input-group mb-3">
                         <span class="input-group-text" id="basic-addon1">Password</span>
-                        <input type="text" class="form-control" @keypress="enterAdd($event)" ref="password" v-model="password"
-                            placeholder="Password" aria-label="Username" aria-describedby="basic-addon1">
+                        <input type="text" class="form-control" @keypress="enterAdd($event)" ref="password"
+                            v-model="password" placeholder="Password" aria-label="Username"
+                            aria-describedby="basic-addon1">
                     </div>
                     <div class="input-group mb-3">
                         <span class="input-group-text" id="basic-addon1">Phone</span>
@@ -145,6 +162,30 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="button" @click="save" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <!-- Modal update-->
+     <div class="modal fade" id="modal_upload" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">File</span>
+                        <input type="file" id="file" name="file" class="form-control" aria-label="Username"
+                            aria-describedby="basic-addon1">
+                    </div>
+                  
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" @click="upload" class="btn btn-primary">Upload</button>
                 </div>
             </div>
         </div>
@@ -155,18 +196,44 @@
         var App = new Vue({
             el: '#app',
             data: {
-                data_users: null
+                data_users: null,
+                search : null
             },
             methods: {
-                showUpdated: function(data){
+                sendToUpload: function(id_user){
+                    upload.id_user = id_user
+                },
+                viewImage:function(foto){
+                    return 'storage/'+foto;
+                },
+                enterSearch: function(e){
+                    if (e.keyCode==13){
+                        this.searchData();
+                    }
+                },
+                searchData: function(){
+                    const $this = this;
+                    jnet({
+                        url: './search-user',
+                        method: 'post',
+                        data: {
+                            _token: "<?= csrf_token() ?>",
+                            username: this.search
+                        }
+                    }).request($response => {
+                        let $obj = JSON.parse($response);
+                        $this.data_users = $obj;
+                    })
+                },
+                showUpdated: function(data) {
                     update.username = data.username;
                     update.email = data.email;
                     update.phone = data.phone;
                     update.password = data.password;
                     update.id_user = data.id_user;
                 },
-                viewLink: function(id_user){
-                    return 'user/'+id_user;
+                viewLink: function(id_user) {
+                    return 'user/' + id_user;
                 },
                 loadData: function() {
                     const $this = this;
@@ -203,22 +270,21 @@
                 this.loadData();
             }
         });
-
         new Vue({
             el: '#modal_add',
             data: {
-                username:null,
-                email:null,
-                password:null,
-                phone:null
+                username: null,
+                email: null,
+                password: null,
+                phone: null
             },
-            methods:{
-                enterAdd: function(e){
-                    if (e.keyCode==13){
+            methods: {
+                enterAdd: function(e) {
+                    if (e.keyCode == 13) {
                         this.save()
                     }
                 },
-                save: function(){
+                save: function() {
                     if (this.username == null) {
                         this.$refs.username.focus()
                         return;
@@ -241,9 +307,9 @@
                         method: 'post',
                         data: {
                             _token: "<?= csrf_token() ?>",
-                            username : this.username,
-                            email : this.email,
-                            phone:this.phone,
+                            username: this.username,
+                            email: this.email,
+                            phone: this.phone,
                             password: this.password
                         }
                     }).request($response => {
@@ -253,27 +319,25 @@
                             App.loadData();
                         }
                     })
-
                 }
             }
         })
-
-      var update =   new Vue({
+        var update = new Vue({
             el: '#modal_update',
             data: {
-                username:null,
-                email:null,
-                password:null,
-                phone:null,
-                id_user :null
+                username: null,
+                email: null,
+                password: null,
+                phone: null,
+                id_user: null
             },
-            methods:{
-                enterAdd: function(e){
-                    if (e.keyCode==13){
+            methods: {
+                enterAdd: function(e) {
+                    if (e.keyCode == 13) {
                         this.save()
                     }
                 },
-                save: function(){
+                save: function() {
                     if (this.username == null) {
                         this.$refs.username.focus()
                         return;
@@ -296,11 +360,11 @@
                         method: 'post',
                         data: {
                             _token: "<?= csrf_token() ?>",
-                            username : this.username,
-                            email : this.email,
-                            phone:this.phone,
+                            username: this.username,
+                            email: this.email,
+                            phone: this.phone,
                             password: this.password,
-                            id_user : this.id_user
+                            id_user: this.id_user
                         }
                     }).request($response => {
                         let $obj = JSON.parse($response);
@@ -309,7 +373,43 @@
                             App.loadData();
                         }
                     })
+                }
+            }
+        })
 
+        var upload = new Vue({
+            el: '#modal_upload',
+            data: {
+                id_user : null
+            },
+            methods: {
+              
+                upload: function() {
+                    if (this.id_user==null){
+                        alert("ID is null")
+                        return;
+                    }
+                    _upload = new Upload({
+                        // Array
+                        el: ['file'],
+                        // String
+                        url: './upload-foto',
+                        // String
+                        data: this.id_user,
+                        // String
+                        token: "<?= csrf_token() ?>"
+                    }).start(($response) => {
+                        var obj = JSON.parse($response);
+
+                        if (obj){
+                            Swal.fire(
+                                    'Good job!',
+                                    'Data Berhasil diupload !',
+                                    'success'
+                             );
+                             $app.loadUser()
+                        }
+                    });
                 }
             }
         })
